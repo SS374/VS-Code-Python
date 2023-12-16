@@ -52,8 +52,13 @@ class SimpleAdditionProblem(Problem):
                     choice = (self.answer - change)
                 else:
                     choice = (self.answer + change)
-                if choice in choices or choice <= 0: # Ensure choice duplicates or negative numbers aren't generated
-                    continue
+                while choice in choices:
+                    change = random.randint(1,5)
+                    sign = random.choice(['+', '-'])
+                    if sign == '-':
+                        choice = (self.answer - change)
+                    else:
+                        choice = (self.answer + change)
                 else:
                     choices.append(choice)
             st.session_state['choicemasterlist'].append(choices)
@@ -87,8 +92,13 @@ class LineSlopeProblem(Problem):
                     choice = (self.answer - change)
                 else:
                     choice = (self.answer + change)
-                if choice in choices: # Ensure choice duplicates aren't generated
-                    continue
+                while choice in choices:
+                    change = random.randint(1,5)
+                    sign = random.choice(['+', '-'])
+                    if sign == '-':
+                        choice = (self.answer - change)
+                    else:
+                        choice = (self.answer + change)
                 else:
                     choices.append(choice)
             st.session_state['choicemasterlist'].append(choices)
@@ -105,6 +115,8 @@ class QuadraticProblem(Problem):
     def __init__(self):
         self.root0 = random.randint(-10, 10)
         self.root1 = random.randint(-10, 10)
+        while self.root0 == self.root1:
+            self.root1 = random.randint(-10, 10)
         self.constant = random.randint(-10, 10)
 
         self.user_answer = None
@@ -121,13 +133,15 @@ class QuadraticProblem(Problem):
     def get_answer(self, problemkey, multichoice = False) -> None:
         self.user_answer = {
             st.number_input('Answer', step=1, key = problemkey), 
-            st.number_input('Answer', step=1, key = problemkey*1000 + 1),
+            st.number_input('Answer', step=1, key = problemkey*1000 + 5),
         }
 
     def check_answer(self):
-        print(self.root0, self.root1)
-        return set(self.user_answer) == {(-self.constant * self.root0) / self.constant,
-            (-self.constant * self.root1) / self.constant}
+        print("Checking answer...")
+        self.root0 = self.root0*-1
+        self.root1 = self.root1*-1
+        print(set(self.user_answer), {self.root0, self.root1})
+        return set(self.user_answer) == {self.root0, self.root1}
 
 def generate_problems(problemClass):
     print("Generating Problems...")
@@ -205,8 +219,13 @@ def home():
             "Line Slope": 'lineslopeproblems',
             "Quadratic": 'quadradicproblems',
         }
+
+        excessnotadded = False
         for problem in st.session_state['multiselect_problems']:
-            st.session_state[problemdict[problem]] = int(factor)
+            if excessnotadded:
+                st.session_state[problemdict[problem]] = int(factor) + int(excess)
+            else:
+                st.session_state[problemdict[problem]] = int(factor)
             print(st.session_state[problemdict[problem]])
             print(st.session_state['additionproblems'])
         print(st.session_state['additionproblems'])
@@ -280,8 +299,6 @@ with open('data.json', 'w') as f:
 '''
 ---
 CHANGELOG
-
-AS OF 12/6/23, compared to 12/1/23:
 - more problem classes (12/4)
 - fixed problem selection after clicking submit (12/4)
 - reset stats button (12/6)
@@ -291,12 +308,14 @@ AS OF 12/6/23, compared to 12/1/23:
 - fixed line drawing on Linear Equations (12/6)
 - creation of home() function (12/6)
 - implement multi-select to sort problems by tag (12/8)
+- fixed quadratic equation logic (12/14)
+- adds remainder when quick generating questions (12/14)
 
 TODO:
 - more problem classes
 
 NOTE:
-- multi-select is a blanket option, cannot be individually turned on
+- multi-select is a blanket option, cannot be turned on for individual problem classes
 - use of st.rerun() in update_stats() function to be changed with control flow
 - not too focused on adding more classes because all classes follow a similar template,
 fast to implement, and main challenges (graphs + 2 number answers) have been solved
