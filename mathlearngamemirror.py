@@ -43,24 +43,13 @@ class SimpleAdditionProblem(Problem):
         """)
         
     def get_answer(self, problemkey, multichoice) -> None:
-        choices = []
         if multichoice:
+            choices = [self.answer]
             for _ in range(3):
-                change = random.randint(1,5)
-                sign = random.choice(['+', '-'])
-                if sign == '-':
-                    choice = (self.answer - change)
-                else:
-                    choice = (self.answer + change)
+                choice = random.randint(1, self.answer + 5)
                 while choice in choices:
-                    change = random.randint(1,5)
-                    sign = random.choice(['+', '-'])
-                    if sign == '-':
-                        choice = (self.answer - change)
-                    else:
-                        choice = (self.answer + change)
-                else:
-                    choices.append(choice)
+                    choice = random.randint(1, self.answer + 5)
+                choices.append(choice)
             st.session_state['choicemasterlist'].append(choices)
             print(st.session_state['choicemasterlist'])
             choices.insert(random.randint(0,2), self.answer) # Inserts answer at random location
@@ -83,24 +72,13 @@ class LineSlopeProblem(Problem):
 
     def get_answer(self, problemkey, multichoice) -> None:
         print(self.answer)
-        choices = []
         if multichoice:
+            choices = [self.answer]
             for _ in range(3):
-                change = random.randint(1,5)
-                sign = random.choice(['+', '-'])
-                if sign == '-':
-                    choice = (self.answer - change)
-                else:
-                    choice = (self.answer + change)
+                choice = random.randint(self.answer - 5, self.answer + 5)
                 while choice in choices:
-                    change = random.randint(1,5)
-                    sign = random.choice(['+', '-'])
-                    if sign == '-':
-                        choice = (self.answer - change)
-                    else:
-                        choice = (self.answer + change)
-                else:
-                    choices.append(choice)
+                    choice = random.randint(self.answer - 5, self.answer + 5)
+                choices.append(choice)
             st.session_state['choicemasterlist'].append(choices)
             print(st.session_state['choicemasterlist'])
             choices.insert(random.randint(0,2), self.answer) # Inserts answer at random location
@@ -119,8 +97,7 @@ class QuadraticProblem(Problem):
             self.root1 = random.randint(-10, 10)
         self.constant = random.randint(-10, 10)
 
-        self.user_answer = None
-
+        self.answer = {self.root0*-1, self.root1*-1}
     def render(self) -> None:
         a = self.constant
         b = self.constant * (self.root0 + self.root1)
@@ -137,11 +114,7 @@ class QuadraticProblem(Problem):
         }
 
     def check_answer(self):
-        print("Checking answer...")
-        self.root0 = self.root0*-1
-        self.root1 = self.root1*-1
-        print(set(self.user_answer), {self.root0, self.root1})
-        return set(self.user_answer) == {self.root0, self.root1}
+        return set(self.user_answer) == self.answer
 
 def generate_problems(problemClass):
     print("Generating Problems...")
@@ -310,6 +283,8 @@ CHANGELOG
 - implement multi-select to sort problems by tag (12/8)
 - fixed quadratic equation logic (12/14)
 - adds remainder when quick generating questions (12/14)
+- more efficient generation of multi-choice answers (12/15)
+- fixed duplicate generation of multi-choice answers (12/15)
 
 TODO:
 - more problem classes
