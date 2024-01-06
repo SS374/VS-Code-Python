@@ -51,14 +51,18 @@ def get_integer_multi_choices(
 
 # FULLY COMPLETED
 class SimpleAdditionProblem(Problem):
-    def __init__(self):
+    def __init__(self, multichoice = False):
         self.a = random.randint(1, 10)
         self.b = random.randint(1, 10)
         self.answer = self.a + self.b
-        self.multi_choices = get_integer_multi_choices(self.answer, 2, 21)
         self.key = get_next_st_key()
         self.tags_ = ["Arthimethic"]
         self.level_ = "Elementary"
+        self.multi_choices = 0
+
+        self.multichoice = multichoice
+        if self.multichoice:
+            self.multi_choices = get_integer_multi_choices(self.answer, 2, 21)
     
     @property
     def tags(self) -> typing.List[str]:
@@ -76,8 +80,8 @@ class SimpleAdditionProblem(Problem):
         """
         )
 
-    def get_answer(self, multichoice) -> None:
-        if multichoice:
+    def get_answer(self) -> None:
+        if self.multichoice:
             self.user_answer = st.selectbox("Answer", self.multi_choices)
         else:
             self.user_answer = st.number_input("Answer", step=1, key=self.key)
@@ -87,13 +91,17 @@ class SimpleAdditionProblem(Problem):
 
 
 class LineSlopeProblem(Problem):
-    def __init__(self):
+    def __init__(self, multichoice = False):
         self.m = random.randint(-5, 5)
         self.answer = self.m
-        self.multi_choices = get_integer_multi_choices(self.answer, -5, 6)
         self.key = get_next_st_key()
         self.tags_ = ["Alegebra", "Graphing"]
         self.level_ = "Middle"
+        self.multi_choices = 0
+
+        self.multichoice = multichoice
+        if self.multichoice:
+            self.multi_choices = get_integer_multi_choices(self.answer, -5, 6)
     
     @property
     def tags(self) -> typing.List[str]:
@@ -108,9 +116,9 @@ class LineSlopeProblem(Problem):
         st.write("What is the slope of the line below?")
         st.write(px.line(x=[-10, -5], y=[5, self.m * 5 + 5]))
 
-    def get_answer(self, multichoice) -> None:
+    def get_answer(self) -> None:
         print(self.answer)
-        if multichoice:
+        if self.multichoice:
             self.user_answer = st.selectbox("Answer", self.multi_choices)
         else:
             self.user_answer = st.number_input("Answer", step=1, key=self.key)
@@ -132,12 +140,13 @@ def get_integer_pair_multi_choices(
 
 
 class QuadraticProblem(Problem):
-    def __init__(self):
+    def __init__(self, multichoice = False):
         self.root0 = random.randint(-10, 10)
         self.root1 = random.randint(-10, 10)
         while self.root0 == self.root1:
             self.root1 = random.randint(-10, 10)
         self.constant = random.randint(-10, 10)
+        self.multi_choices = 0
 
 
         self.answer = {self.root0 * -1, self.root1 * -1}
@@ -147,6 +156,10 @@ class QuadraticProblem(Problem):
         self.key2 = get_next_st_key()
         self.tags_ = ["Algebra"]
         self.level_ = "Middle"
+
+        self.multichoice = multichoice
+        if self.multichoice:
+            self.multi_choices = get_integer_pair_multi_choices(tuple(self.answer), -10, 10)
     
     @property
     def tags(self) -> typing.List[str]:
@@ -167,9 +180,9 @@ class QuadraticProblem(Problem):
         """
         )
 
-    def get_answer(self, multichoice=False) -> None:
+    def get_answer(self) -> None:
         print(self.answer)
-        if multichoice:
+        if self.multichoice:
             self.user_answer = st.selectbox("Answer", self.multi_choices)
         else:
             self.user_answer = {
@@ -279,7 +292,7 @@ def gen_quick_practice():
         "Multiple Choice Questions",
     )
 
-    if st.button("Submit", key=get_next_st_key()):
+    if st.button("Submit", key=get_next_st_key()) and len(multiselect_problems) > 0 and len(multiselect_total) > 0:
         problems = []
 
         excess = multiselect_total % len(multiselect_problems)
@@ -298,7 +311,7 @@ def gen_quick_practice():
             else:
                 factor = rate
             for _ in range(factor):
-                problems.append(problemdict[problem]())
+                problems.append(problemdict[problem](multichoice))
 
         return problems
 
@@ -326,7 +339,7 @@ def gen_by_problem():
         problems = []
         for problem in problemdict:
             for i in range(problemdict[problem]):
-                problems.append(problem())
+                problems.append(problem(multichoice))
     
         return problems
 
@@ -359,7 +372,7 @@ if "problems" not in st.session_state:
 
     for container, (_, tab_function) in zip(tab_containers, TABS):
         with container:
-            problems= tab_function()
+            problems = tab_function()
             if problems is not None:
                 st.session_state["problems"] = problems
                 st.rerun()
@@ -367,7 +380,7 @@ if "problems" not in st.session_state:
 else:
     for p in st.session_state["problems"]:
         p.render()
-        p.get_answer(False)
+        p.get_answer()
 
     if st.button("Submit"):
         submit(st.session_state["problems"])
